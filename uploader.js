@@ -1,10 +1,10 @@
 const tinify = require('tinify')
-const keys = require('./key.json')
+
 
 const fs = require('fs')
 
-function compress(keyIndex, file) {
-    tinify.key = keys[keyIndex]
+function compress(file, key) {
+    tinify.key = keys
 
     fs.readFile(file, function(err, sourceData) {
         if (err) throw err
@@ -12,7 +12,8 @@ function compress(keyIndex, file) {
             if (err) throw err
 
             // 如果key额度用光了
-            compress(keyIndex + 1, file)
+            uploader.emit('out')
+            return
 
             // 压缩超过30%
             if ((file.size - resultData.size) / file.size > 0.3) {
@@ -28,8 +29,8 @@ function compress(keyIndex, file) {
 }
 
 const uploader = {
-    run(file) {
-        compress(0, file)
+    run(file, key) {
+        compress(file, key)
     }
 }
 
