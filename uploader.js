@@ -1,32 +1,38 @@
 const tinify = require('tinify')
 const fs = require('fs')
 
-function compress(file, key) {
-    tinify.key = keys
 
-    fs.readFile(file, function(err, sourceData) {
+// file: {file, index}
+// key: {key, index}
+function compress(file, key) {
+    tinify.key = key.key
+
+    fs.readFile(file.file, function(err, sourceData) {
         if (err) throw err
         tinify.fromBuffer(sourceData).toBuffer(function(err, resultData) {
             if (err) throw err
 
             // 如果key额度用光了
-            uploader.emit('out')
-            return
+            // uprocess.send({type: 'out', value: {file, key}})
+            // return
+
+            // 如果出错了
+            // process.send({type: 'error', value: {file, key}})
 
             // 压缩超过30%
-            if ((file.size - resultData.size) / file.size > 0.3) {
+            if ((file.file.size - resultData.size) / file.file.size > 0.3) {
+
 
                 // 覆盖文件
-                fs.writeFile('')
+                // fs.writeFile('')
 
-                uploader.emit('end')
+                process.send({type: 'end'})
             }
         })
     })
 
 }
 
-process.on('message', function(m) {
-    compress(file, key)
+process.on('message', (config) => {
+    compress(config.file, config.key)
 })
-process.send({ foo: 'bar' })

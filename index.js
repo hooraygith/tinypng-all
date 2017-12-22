@@ -1,20 +1,18 @@
 const glob = require('glob')
 const {fork} = require('child_process')
 
+const readdir = require('./readdir.js')
 const keys = require('./key.json').keys.map(key => ({key: key}))
 
-let files = [{file: '', size: ''}]
-
-glob('./img/**', (err, _files) => {
-    files = _files.filter(file => file.slice(-4) === '.png' || file.slice(-4) === '.jpg').map(file => {
-        return {
-            file: '',
-            size: ''
-        }
+let files
+(async () => {
+    files = await readdir('img', {
+        match: /\.(png|jpe?g)$/i,
+        exclude: ['node_modules']
     })
-})
+})()
 
-let childCount = require('os').cpus().length
+const childCount = require('os').cpus().length
 
 const uploaders = Array.apply(null, Array(childCount)).map(_ => {
     return fork('./uploader.js')
@@ -24,30 +22,48 @@ let processedCount = 0
 
 uploaders.forEach(uploader => {
     if (files[processedCount]) {
-        uploader.run(files[processedCount], findKey(keys))
+        const file = {
+            file: files[processedCount],
+            index: processedCount
+        }
+        uploader.send({file, findKey(keys)})
         processedCount += 1
 
-        uploader.on('end', (res) => {
-            // 如果还有文件
-            if (files[processedCount]) {
-                // 找到有效的key
-                // uploader.run(files[processedCount], findKey(keys))
-                uploader.send({ hello: 'world' })
-                processedCount += 1
+        uploader.on('message', val => {
+            // 结束，分配下一个
+            if (val.type === 'end') {
+                // 如果还有文件
+                if (files[processedCount]) {
+                    const file = {
+                        file: files[processedCount],
+                        index: processedCount
+                    }
+                    uploader.send({file, findKey(keys)})
+                    processedCount += 1
+                }
             }
-        })
+            // key额度用光，换下一个key，重试
+            if (val.type === 'out') {
+                const keyIndex = val.value.key.index
+                keys[keyIndex].invalid = true
 
-        uploader.on('out', (key) => {
-            // 标记key无效
-            key.invalid = true
+            }
+            // 请求出错，重试
+            if (val.type === 'error') {
+
+            }
         })
     }
 })
 
 function findKey(keys) {
-    for (let key of keys) {
+    for (let index = 0; index < keys.length; index++) {
+        const key = keys[index]
         if (!key.invalid) {
-            return key
+            return {
+                key,
+                index
+            }
         }
     }
 }
