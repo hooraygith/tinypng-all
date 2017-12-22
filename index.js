@@ -5,8 +5,8 @@ const keys = require('./key.json').keys.map(key => ({key: key}))
 
 let files = [{file: '', size: ''}]
 
-glob('*.(png|jpg|jpeg)', (err, _files) => {
-    files = _files.map(file => {
+glob('./img/**', (err, _files) => {
+    files = _files.filter(file => file.slice(-4) === '.png' || file.slice(-4) === '.jpg').map(file => {
         return {
             file: '',
             size: ''
@@ -14,7 +14,7 @@ glob('*.(png|jpg|jpeg)', (err, _files) => {
     })
 })
 
-let childCount = 4
+let childCount = require('os').cpus().length
 
 const uploaders = Array.apply(null, Array(childCount)).map(_ => {
     return fork('./uploader.js')
@@ -31,7 +31,8 @@ uploaders.forEach(uploader => {
             // 如果还有文件
             if (files[processedCount]) {
                 // 找到有效的key
-                uploader.run(files[processedCount], findKey(keys))
+                // uploader.run(files[processedCount], findKey(keys))
+                uploader.send({ hello: 'world' })
                 processedCount += 1
             }
         })

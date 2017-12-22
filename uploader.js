@@ -1,6 +1,4 @@
 const tinify = require('tinify')
-
-
 const fs = require('fs')
 
 function compress(file, key) {
@@ -28,10 +26,7 @@ function compress(file, key) {
 
 }
 
-const uploader = {
-    run(file, key) {
-        compress(file, key)
-    }
-}
-
-module.exports = uploader
+process.on('message', function(m) {
+    compress(file, key)
+})
+process.send({ foo: 'bar' })
