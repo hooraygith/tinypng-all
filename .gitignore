@@ -3,4 +3,5 @@
 .idea
 *.log
 /dist
+.DS_Store
 node_modules
