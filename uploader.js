@@ -4,8 +4,13 @@ const fs = require('fs')
 
 // file: {file, index}
 // key: {key, index}
-function compress(file, key) {
+// config: {proxy, limit, keepFile}
+function compress(file, key, config) {
     tinify.key = key.key.key
+
+    if (config.proxy) {
+        tinify.proxy = config.proxy
+    }
 
     fs.readFile(file.file, function(err, sourceData) {
         if (err) throw err
@@ -20,33 +25,35 @@ function compress(file, key) {
             // process.send({type: 'error', value: {file, key}})
 
             // 压缩超过20%
-            if ((file.size - resultData.byteLength) / file.size > 0.2) {
+            const rate = (file.size - resultData.byteLength) / file.size
+            if (rate > config.limit) {
 
                 let compressedName
-                if (1) {
-                    compressedName = file.file
-                } else {
+                if (config.keepFile) {
                     compressedName = file.file.replace(/(.+)(\.[^\.]+)$/i, (match, p1, p2) => {
-                        return p1 + '-comped' + p2
+                        return p1 + '-tinified' + p2
                     })
+                } else {
+                    compressedName = file.file
                 }
 
                 fs.writeFile(compressedName, resultData, 'binary', function(err) {
                     if (err) {
                         console.log(err)
                     } else {
-                        console.log(`${file.file}  压缩成功`)
+                        console.log(`${file.file}  压缩成功, 压缩率 ${(rate * 100).toFixed(1)}%`)
                         process.send({type: 'end', value: {file, key}})
                     }
                 })
             } else {
                 console.log(`${file.file}  重复压缩`)
+                process.send({type: 'end', value: {file, key}})
             }
         })
     })
 
 }
 
-process.on('message', (config) => {
-    compress(config.file, config.key)
+process.on('message', (data) => {
+    compress(data.file, data.key, data.config)
 })

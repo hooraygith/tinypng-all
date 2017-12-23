@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/hooraygith/tinypng-all#readme",
   "dependencies": {
-    "tinify": "^1.5.0"
+    "tinify": "^1.5.0",
+    "yargs": "^10.0.3"
   }
 }
