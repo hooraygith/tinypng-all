@@ -46,7 +46,7 @@ function compress(file, key, config) {
                     }
                 })
             } else {
-                console.log(`${file.file}  has been compressed`)
+                console.log(`${file.file}  compress repeat, ignore`)
                 process.send({type: 'end', value: {file, key}})
             }
         })
