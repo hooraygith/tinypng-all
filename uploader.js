@@ -6,6 +6,7 @@ const fs = require('fs')
 // key: {key, index}
 // config: {proxy, limit, keepFile}
 function compress(file, key, config) {
+
     tinify.key = key.key.key
 
     if (config.proxy) {
@@ -29,7 +30,7 @@ function compress(file, key, config) {
             if (rate > config.limit) {
 
                 let compressedName
-                if (config.keepFile) {
+                if (config.keep) {
                     compressedName = file.file.replace(/(.+)(\.[^\.]+)$/i, (match, p1, p2) => {
                         return p1 + '-tinified' + p2
                     })

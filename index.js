@@ -12,7 +12,7 @@ const {fork} = require('child_process')
 const _argv = require('yargs')
 
 const readdir = require('./readdir.js')
-const keys = require('./key.json').keys.map(key => ({key: key}))
+
 
 const argv = _argv
     .option('dir', {
@@ -38,37 +38,37 @@ const argv = _argv
     })
     .option('exclude', {
         default: '',
-        desc: 'the directory excluded'
+        desc: 'directories excluded, "," split'
+    })
+    .option('key', {
+        default: '',
+        desc: 'the api key of tinypng.com, "," split'
     })
     .argv
 
-const config = {
-    dir: argv.d,
-    childCount: argv.parallel,
-    limit: argv.limit,
-    proxy: argv.proxy,
-    keepFile: argv.keep,
-    exclude: argv.exclude
+let exclude = ['node_modules', 'dist']
+if (argv.exclude) {
+    exclude = exclude.concat(argv.exclude.split(','))
+}
+let keys = require('./key.json').keys.map(key => ({key: key}))
+if (argv.key) {
+    keys = argv.key.split(',')
 }
 
-
 ;(async () => {
-    let exclude = ['node_modules', 'dist']
-    if (config.exclude) {
-        exclude = exclude.concat(config.exclude.split(','))
-    }
-    let files = await readdir(config.dir, {
+
+    let files = await readdir(argv.dir, {
         match: /\.(png|jpe?g)$/i,
         exclude
     })
 
     console.log('待处理图片数量：' + files.length)
 
-    if (files.length < config.childCount) {
-        config.childCount = files.length
+    if (files.length < argv.parallel) {
+        argv.parallel = files.length
     }
 
-    const uploaders = Array.apply(null, Array(config.childCount)).map(_ => {
+    const uploaders = Array(argv.parallel).fill('').map(_ => {
         return fork('./uploader.js')
     })
 
@@ -79,7 +79,7 @@ const config = {
             const file = findFile(files)
             if (file) {
                 files[file.index].padding = true
-                uploader.send({file, key: findKey(keys), config})
+                uploader.send({file, key: findKey(keys), config: argv})
             }
 
             uploader.on('message', val => {
@@ -91,7 +91,7 @@ const config = {
                     const file = findFile(files)
                     if (file) {
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config})
+                        uploader.send({file, key: findKey(keys), config: argv})
                     }
 
                     // 如果没有可以压缩的了，结束这个进程
@@ -109,7 +109,7 @@ const config = {
                     const file = findFile(files)
                     if (file) {
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config})
+                        uploader.send({file, key: findKey(keys), config: argv})
                     }
                 }
                 // 请求出错，重试
@@ -119,7 +119,7 @@ const config = {
                     const file = findFile(files)
                     if (file) {
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config})
+                        uploader.send({file, key: findKey(keys), config: argv})
                     }
                 }
             })
