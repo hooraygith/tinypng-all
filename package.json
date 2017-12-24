@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Compress the images automatically with tinypng",
   "main": "index.js",
+  "bin": {
+    "tna": "./index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
