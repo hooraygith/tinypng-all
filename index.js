@@ -30,7 +30,7 @@ const argv = _argv
     })
     .option('proxy', {
         default: '',
-        desc: 'proxy, support http but not socks5'
+        desc: 'proxy, support all common protocol, like http and socks5'
     })
     .option('keep', {
         default: false,
