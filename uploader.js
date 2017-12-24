@@ -41,12 +41,12 @@ function compress(file, key, config) {
                     if (err) {
                         console.log(err)
                     } else {
-                        console.log(`${file.file}  压缩成功, 压缩率 ${(rate * 100).toFixed(1)}%`)
+                        console.log(`${file.file}  compress success, compress ratio ${(rate * 100).toFixed(1)}%`)
                         process.send({type: 'end', value: {file, key}})
                     }
                 })
             } else {
-                console.log(`${file.file}  重复压缩`)
+                console.log(`${file.file}  has been compressed`)
                 process.send({type: 'end', value: {file, key}})
             }
         })
