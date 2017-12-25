@@ -1,11 +1,11 @@
 /*
  * 参数：
- * -d --dir 待压缩图片的文件夹位置
  * --parallel 4 进程数，默认是cpu线程数
  * --limit 0.2 重复压缩的阈值，压缩率低于这个值时判断为重复压缩，默认0.2
  * --proxy http://127.0.0.1:1080 代理地址
  * --keep true 保留原文件flag，默认会替换原文件
  * --exclude build,bin 排除的文件夹名字
+ * --key  key1,key2  api key
  */
 
 const {fork} = require('child_process')
@@ -15,11 +15,6 @@ const readdir = require('./readdir.js')
 
 
 const argv = _argv
-    .option('dir', {
-        alias: 'd',
-        default: '',
-        desc: 'the images directory'
-    })
     .option('parallel', {
         default: require('os').cpus().length,
         desc: 'parallel number, the number of child processes'
@@ -57,7 +52,7 @@ if (argv.key) {
 
 ;(async () => {
 
-    let files = await readdir(argv.dir, {
+    let files = await readdir(argv._[0], {
         match: /\.(png|jpe?g)$/i,
         exclude
     })

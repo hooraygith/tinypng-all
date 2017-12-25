@@ -42,12 +42,12 @@ function compress(file, key, config) {
                     if (err) {
                         console.log(err)
                     } else {
-                        console.log(`${file.file}  compress success, compress ratio ${(rate * 100).toFixed(1)}%`)
+                        console.log(`compress success, ${file.file}  compress ratio ${(rate * 100).toFixed(1)}%`)
                         process.send({type: 'end', value: {file, key}})
                     }
                 })
             } else {
-                console.log(`${file.file}  compress repeat, ignore`)
+                console.log(`ignore ${file.file}  compress repeat`)
                 process.send({type: 'end', value: {file, key}})
             }
         })
