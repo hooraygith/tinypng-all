@@ -7,7 +7,7 @@ const fs = require('fs')
 // config: {proxy, limit, keepFile}
 function compress(file, key, config) {
 
-    tinify.key = key.key.key
+    tinify.key = 'key.key'
 
     if (config.proxy) {
         tinify.proxy = config.proxy
@@ -16,14 +16,20 @@ function compress(file, key, config) {
     fs.readFile(file.file, function(err, sourceData) {
         if (err) throw err
         tinify.fromBuffer(sourceData).toBuffer(function(err, resultData) {
-            if (err) throw err
+            if (err) {
+                // 如果key不正确
+                if (err.status === 401) {
+                    process.send({type: 'out', value: {file, key}})
+                } else if (err.status === 429) {    // 如果key次数用完了
+                    process.send({type: 'out', value: {file, key}})
+                } else {    // 未知错误
+                    process.send({type: 'unknown', value: {file, key}})
+                }
 
-            // 如果key额度用光了
-            // uprocess.send({type: 'out', value: {file, key}})
-            // return
-
-            // 如果出错了
-            // process.send({type: 'error', value: {file, key}})
+                // 如果其他网络错误
+                console.log('err:', err.status, err.message)
+                return
+            }
 
             // 压缩超过20%
             const rate = (file.size - resultData.byteLength) / file.size

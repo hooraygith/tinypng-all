@@ -102,19 +102,35 @@ if (argv.key) {
                     files[fileIndex].padding = false
 
                     const file = findFile(files)
-                    if (file) {
+                    const key = findKey(keys)
+                    if (file && key) {
+                        console.log('key 无效，换下一个：', key.key)
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config: argv})
+                        uploader.send({file, key, config: argv})
+                    } else {
+                        uploader.kill()
                     }
                 }
-                // 请求出错，重试
-                if (val.type === 'error') {
+                // 未知错误，重试
+                if (val.type === 'unknown') {
+                    const keyIndex = val.value.key.index
                     const fileIndex = val.value.file.index
+                    uploaders.erorTimes = uploaders.erorTimes ? uploaders.erorTimes + 1 : 0
                     files[fileIndex].padding = false
+
+                    // 如果错误次数超过3次，停止全部
+                    if (uploaders.erorTimes > 3) {
+                        uploaders.forEach(uploader => uploader.kill())
+                    }
+
                     const file = findFile(files)
-                    if (file) {
+                    const key = findKey(keys)
+
+                    if (file && key) {
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config: argv})
+                        uploader.send({file, key, config: argv})
+                    } else {
+                        uploader.kill()
                     }
                 }
             })
@@ -141,7 +157,7 @@ function findKey(keys) {
         const key = keys[index]
         if (!key.invalid) {
             return {
-                key,
+                key: key.key,
                 index
             }
         }
