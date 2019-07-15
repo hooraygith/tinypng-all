@@ -7,7 +7,7 @@ const fs = require('fs')
 // config: {proxy, limit, keepFile}
 function compress(file, key, config) {
 
-    tinify.key = 'key.key'
+    tinify.key = key.key
 
     if (config.proxy) {
         tinify.proxy = config.proxy
@@ -15,6 +15,7 @@ function compress(file, key, config) {
 
     fs.readFile(file.file, function(err, sourceData) {
         if (err) throw err
+        console.log(`compress start, ${file.file}`)
         tinify.fromBuffer(sourceData).toBuffer(function(err, resultData) {
             if (err) {
                 // 如果key不正确
