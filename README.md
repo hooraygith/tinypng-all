@@ -5,7 +5,7 @@ Compress the images automatically with tinypng
 
 `npm i tinypng-all -g`
 
-`tna ./path/to/project`
+`tn ./path/to/project`
 
 
 参数:
