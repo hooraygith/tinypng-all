@@ -22,6 +22,6 @@
   "homepage": "https://github.com/hooraygith/tinypng-all#readme",
   "dependencies": {
     "tinify": "^1.6.0-beta.2",
-    "yargs": "^13.2.4"
+    "yargs": "^14.2.0"
   }
 }
