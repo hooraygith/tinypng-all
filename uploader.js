@@ -19,7 +19,7 @@ function compress(file, key, config) {
         console.log(`resize start, ${file.file}`)
 
         const _buffer = await sharp(sourceData)
-            .resize(800, 800)
+            .resize(800, 800, {withoutEnlargement: true, fit: 'contain'})
             .toBuffer()
 
         console.log(`compress start, ${file.file}`)
