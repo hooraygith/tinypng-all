@@ -1,5 +1,6 @@
 const tinify = require('tinify')
 const fs = require('fs')
+const sharp = require('sharp')
 
 
 // file: {file, index}
@@ -13,10 +14,16 @@ function compress(file, key, config) {
         tinify.proxy = config.proxy
     }
 
-    fs.readFile(file.file, function(err, sourceData) {
+    fs.readFile(file.file, async function(err, sourceData) {
         if (err) throw err
+        console.log(`resize start, ${file.file}`)
+
+        const _buffer = await sharp(sourceData)
+            .resize(800, 800)
+            .toBuffer()
+
         console.log(`compress start, ${file.file}`)
-        tinify.fromBuffer(sourceData).toBuffer(function(err, resultData) {
+        tinify.fromBuffer(_buffer).toBuffer(function(err, resultData) {
             if (err) {
                 // 如果key不正确
                 if (err.status === 401) {
