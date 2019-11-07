@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * 参数：
  * --parallel 4 进程数，默认是cpu线程数
