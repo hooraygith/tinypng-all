@@ -66,7 +66,7 @@ if (argv.key) {
     }
 
     const uploaders = Array(argv.parallel).fill('').map(_ => {
-        return fork('./uploader.js')
+        return fork(__dirname + '/uploader.js')
     })
 
     let processedCount = 0
@@ -84,16 +84,16 @@ if (argv.key) {
                 if (val.type === 'end') {
                     const fileIndex = val.value.file.index
                     files[fileIndex].resolved = true
+                    
+                    // 如果没有可以压缩的了，结束这个进程
+                    if (files.every(file => file.resolved || file.padding)) {
+                        uploader.kill()
+                    }
 
                     const file = findFile(files)
                     if (file) {
                         files[file.index].padding = true
                         uploader.send({file, key: findKey(keys), config: argv})
-                    }
-
-                    // 如果没有可以压缩的了，结束这个进程
-                    if (files.every(file => file.resolved || file.padding)) {
-                        uploader.kill()
                     }
                 }
                 // key额度用光，换下一个key，重试
