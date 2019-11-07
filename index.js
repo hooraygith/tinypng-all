@@ -45,7 +45,7 @@ let exclude = ['node_modules', 'dist']
 if (argv.exclude) {
     exclude = exclude.concat(argv.exclude.split(','))
 }
-let keys = require('./key.json').keys.map(key => ({key: key}))
+let keys = require('./key.js').keys.map(key => ({key: key}))
 if (argv.key) {
     keys = argv.key.split(',')
 }
