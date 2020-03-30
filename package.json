@@ -1,6 +1,6 @@
 {
   "name": "tinypng-all",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Compress the images automatically with tinypng",
   "main": "index.js",
   "bin": {
