@@ -55,7 +55,13 @@ if (argv.key) {
 ;(async () => {
 
     let files = await readdir(argv._[0], {
-        match: /\.(png|jpe?g)$/i,
+        match: file => {
+            const re1 = /\.(png|jpe?g)$/i
+            const re2 = /-tinified\.(png|jpe?g)$/i
+            if (re1.test(file) && !re2.test(file)) {
+                return true
+            }
+        },
         exclude
     })
 

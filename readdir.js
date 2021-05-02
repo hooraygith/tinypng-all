@@ -16,8 +16,8 @@ async function readFiles(dir, config={}) {
         throw 'dir is required'
     }
     const type = obj => Object.prototype.toString.call(obj)
-    if (config.match && type(config.match) !== '[object RegExp]') {
-        throw 'config.match must be RegExp'
+    if (config.match && !['[object RegExp]', '[object Function]'].includes(type(config.match))) {
+        throw 'config.match must be RegExp or Function'
     }
     if (
         config.exclude &&
@@ -45,7 +45,16 @@ async function readFiles(dir, config={}) {
                     return await read(fullPath)
                 }
             } else {
-                if (match.test(item)) {
+                if (type(match) === '[object Function]') {
+                    const result = match(item)
+                    if (result) {
+                        files.push({
+                            name: item,
+                            fullname: fullPath,
+                            size: stat.size
+                        })
+                    }
+                } else if (match.test(item)) {
                     files.push({
                         name: item,
                         fullname: fullPath,
