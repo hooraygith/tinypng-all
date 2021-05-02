@@ -86,15 +86,16 @@ if (argv.key) {
             }
 
             uploader.on('message', val => {
-                // 结束，分配下一个
+                // 结束，分配下一个文件
                 if (val.type === 'end') {
                     const fileIndex = val.value.file.index
+                    const key = val.value.key
                     files[fileIndex].resolved = true
 
                     const file = findFile(files)
                     if (file) {
                         files[file.index].padding = true
-                        uploader.send({file, key: findKey(keys), config: argv})
+                        uploader.send({file, key, config: argv})
                     } else {
                         uploader.kill()
                     }
@@ -103,10 +104,10 @@ if (argv.key) {
                 if (val.type === 'out') {
                     const keyIndex = val.value.key.index
                     const fileIndex = val.value.file.index
+                    const file = val.value.file
                     keys[keyIndex].invalid = true
                     files[fileIndex].padding = false
 
-                    const file = findFile(files)
                     const key = findKey(keys)
                     if (file && key) {
                         console.log('key 无效，换下一个：', key.key)
@@ -116,6 +117,7 @@ if (argv.key) {
                         uploader.kill()
                     }
                 }
+
                 // 未知错误，重试
                 if (val.type === 'unknown') {
                     const keyIndex = val.value.key.index
@@ -123,19 +125,31 @@ if (argv.key) {
                     uploaders.erorTimes = uploaders.erorTimes ? uploaders.erorTimes + 1 : 0
                     files[fileIndex].padding = false
 
-                    // 如果错误次数超过3次，停止全部
-                    if (uploaders.erorTimes > 3) {
-                        uploaders.forEach(uploader => uploader.kill())
-                    }
+                    // 如果压缩同一个文件，错误次数超过3次，忽略他
+                    const processTimes = val.processTimes
+                    if (processTimes > 3) {
+                        console.log('同一个文件错误超过3次', key.key)
 
-                    const file = findFile(files)
-                    const key = findKey(keys)
-
-                    if (file && key) {
-                        files[file.index].padding = true
-                        uploader.send({file, key, config: argv})
+                        // 换下一个文件
+                        const file = findFile(files)
+                        const key = val.value.key
+                        if (file && key) {
+                            files[file.index].padding = true
+                            uploader.send({file, key, config: argv})
+                        } else {
+                            uploader.kill()
+                        }
                     } else {
-                        uploader.kill()
+                        // 累计未知错误超过10次，杀死全部
+                        if (uploaders.erorTimes > 10) {
+                            uploaders.forEach(uploader => uploader.kill())
+                        } else {
+                            files[fileIndex].padding = true
+                            
+                            const file = val.value.file
+                            const key = val.value.key
+                            uploader.send({file, key, config: argv, processTimes: processTimes + 1})
+                        }
                     }
                 }
             })

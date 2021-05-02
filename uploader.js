@@ -6,7 +6,7 @@ const sharp = require('sharp')
 // file: {file, index}
 // key: {key, index}
 // config: {proxy, limit, keepFile}
-function compress(file, key, config) {
+function compress(file, key, config, processTimes = 1) {
 
     tinify.key = key.key
 
@@ -31,7 +31,7 @@ function compress(file, key, config) {
                 } else if (err.status === 429) {    // 如果key次数用完了
                     process.send({type: 'out', value: {file, key}})
                 } else {    // 未知错误
-                    process.send({type: 'unknown', value: {file, key}})
+                    process.send({type: 'unknown', value: {file, key}}, processTimes)
                 }
 
                 // 如果其他网络错误
